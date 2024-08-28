@@ -45,7 +45,7 @@ public enum Status {
                 return status;
             }
         }
-        throw new IllegalArgumentException("Unknown HTTP status code: " + code);
+        throw new IllegalArgumentException("Unknown status code: " + code);
     }
 }
 
