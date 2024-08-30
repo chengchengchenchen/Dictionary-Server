@@ -1,20 +1,22 @@
 package enums;
 
 public enum Response {
-    // 2xx Success
-    SUCCESS(200, "SUCCESS"),
-    CREATED(201, "Created"),
-    ACCEPTED(202, "Accepted"),
-    NO_CONTENT(204, "No Content"),
+    // Success
+    SUCCESS(200, "OK query"),
+    ADDED(201, "Word added successfully"),
+    UPDATED(202, "Word already updated"),
+    REMOVED(204, "Word removed successfully"),
 
 
-    // 4xx Client Error
-    BAD_REQUEST(400, "Bad enums.Request"),
-    UNAUTHORIZED(401, "Unauthorized"),
-    FORBIDDEN(403, "Forbidden"),
-    NOT_FOUND(404, "Not Found"),
+    // 4xx Server Error
+    DUPLICATE(400, "Word duplicates"),
+    NO_WORD(401, "Word is nonexistent"),
+    NO_MEANING(402, "Meaning is nonexistent"),
+    DUPLICATE_MEANING(403, "Meaning duplicates"),
+    NO_ACTION(404, "Unknown action"),
+    FORBIDDEN(405, "Invalid format"),
 
-    // 5xx server.Server Error
+    // 5xx Client Error
     INTERNAL_SERVER_ERROR(500, "Internal server.Server Error"),
     NOT_IMPLEMENTED(501, "Not Implemented"),
     BAD_GATEWAY(502, "Bad Gateway"),

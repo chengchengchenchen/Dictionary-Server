@@ -7,6 +7,8 @@ import server.ServerResponse;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Client {
     private static final String SERVER_ADDRESS = "localhost"; // 服务器地址
@@ -19,8 +21,10 @@ public class Client {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             System.out.println("Connected to Dictionary Server");
-
-            ClientRequest request = new ClientRequest(Request.SEARCH, "test");
+            List<String> a = new ArrayList<>();
+            a.add("a");
+            a.add("b");
+            ClientRequest request = new ClientRequest(Request.REMOVE, "test", a);
 
             // 将请求对象序列化为 JSON 并发送到服务器
             out.println(gson.toJson(request));

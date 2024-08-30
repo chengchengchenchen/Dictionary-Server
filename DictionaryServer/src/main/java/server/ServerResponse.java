@@ -22,6 +22,11 @@ public class ServerResponse {
         this.response = response;
         this.word = word;
     }
+
+    public ServerResponse(Response response) {
+        this.response = response;
+    }
+
     public ServerResponse(){}
 
     @Override
