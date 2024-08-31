@@ -20,6 +20,12 @@ public class ClientRequest {
     }
 
     //ADD
+    public ClientRequest(Request request, String word, String newMeaning){
+        this.request = request;
+        this.word = word;
+        this.newMeaning = newMeaning;
+    }
+    //CREATE
     public ClientRequest(Request request, String word, List<String> meanings){
         this.request = request;
         this.word = word;

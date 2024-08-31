@@ -12,17 +12,16 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Slf4j
 public class Server {
-    private static final int PORT = 8080;
-    private static final String FILE_NAME = "dictionary.json";
-    private final Map<String, List<String>> dictionary;
+    private static int PORT = 8080;
+    private static String FILE_NAME = "dictionary.json";
+    private final ConcurrentHashMap<String, List<String>> dictionary;
     private final Gson gson = new Gson();
     private final ExecutorService threadPool = Executors.newFixedThreadPool(2);
 
@@ -30,19 +29,19 @@ public class Server {
         dictionary = loadDictionary();
     }
 
-    private Map<String, List<String>> loadDictionary() {
+    private  ConcurrentHashMap<String, List<String>> loadDictionary() {
         File file = new File(FILE_NAME);
         if (file.exists()) {
             log.info("Loading dictionary from file: {}", FILE_NAME);
             try (Reader reader = new FileReader(file)) {
-                Type type = new TypeToken<Map<String, List<String>>>() {}.getType();
+                Type type = new TypeToken<ConcurrentHashMap<String, List<String>>>() {}.getType();
                 return gson.fromJson(reader, type);
             } catch (IOException e) {
                 log.error("Failed to load dictionary from file: {}", FILE_NAME, e);
             }
         }
         log.warn("Dictionary file not found. Starting with an empty dictionary.");
-        return new HashMap<>();
+        return new  ConcurrentHashMap<>();
     }
 
     private void saveDictionary() {
@@ -67,9 +66,6 @@ public class Server {
             }
         } catch (IOException e) {
             log.error("Server socket error on port: {}: {}", PORT, e.getMessage(), e);
-        } finally {
-            saveDictionary();
-            log.info("Dictionary saved and server stopped.");
         }
     }
 
@@ -105,10 +101,14 @@ public class Server {
 
     private ServerResponse processRequest(ClientRequest clientRequest) {
         Request action = clientRequest.request;
-        ServerResponse serverResponse = new ServerResponse();
+        ServerResponse serverResponse;
         switch(action){
+            case CREATE:
+                serverResponse = CreateWord(clientRequest);
+                break;
+
             case ADD:
-                serverResponse = AddWord(clientRequest);
+                serverResponse = AddMeaning(clientRequest);
                 break;
 
             case UPDATE:
@@ -128,69 +128,101 @@ public class Server {
                 log.warn("Unknown request type received: {}", action);
                 break;
         }
-        // Implement actual request processing logic here
         return serverResponse;
     }
 
-    private ServerResponse AddWord(ClientRequest clientRequest){
+    private ServerResponse CreateWord(ClientRequest clientRequest){
         String word = clientRequest.word;
         List<String> meanings = clientRequest.meanings;
         ServerResponse serverResponse = new ServerResponse();
-        if (dictionary.containsKey(word)) {
-            serverResponse.response = Response.DUPLICATE;
-            serverResponse.word = clientRequest.word;
-            log.info(Response.DUPLICATE.getDescription());
-        } else {
-            dictionary.put(word, meanings);
-            serverResponse.response = Response.ADDED;
+
+        // putIfAbsent
+        if (dictionary.putIfAbsent(word, meanings) == null) {
+            serverResponse.response = Response.CREATED;
             serverResponse.word = clientRequest.word;
             log.info("Added new word '{}' with meanings: {}", word, meanings);
+        } else {
+            serverResponse.response = Response.DUPLICATE;
+            serverResponse.word = clientRequest.word;
+            log.info("Word '{}' already exists in the dictionary.", word);
         }
-        saveDictionary();  // 每次操作后保存字典
+        saveDictionary();  // save
         return serverResponse;
     }
 
-    private ServerResponse UpdateWord(ClientRequest clientRequest){
+    private ServerResponse AddMeaning(ClientRequest clientRequest){
+        String word = clientRequest.word;
+        String newMeaning = clientRequest.newMeaning;
+        ServerResponse serverResponse = new ServerResponse();
+
+        List<String> meanings = dictionary.get(word);
+        if (meanings == null) {
+            serverResponse.response = Response.NO_WORD;
+            serverResponse.word = word;
+            log.warn("Word '{}' not found in dictionary.", word);
+            return serverResponse;
+        }
+        // synchronize list of meanings to ensure thread security
+        synchronized (meanings) {
+            if (meanings.contains(newMeaning)) {
+                serverResponse.response = Response.DUPLICATE_MEANING;
+                serverResponse.word = word;
+                log.warn("New meaning '{}' for word '{}' duplicates.", newMeaning, word);
+                return serverResponse;
+            }
+
+            // add
+            meanings.add(newMeaning);
+            dictionary.put(word, meanings);
+            serverResponse.response = Response.ADDED;
+            serverResponse.word = word;
+            log.info("Added word '{}' meaning '{}'.", word, newMeaning);
+        }
+
+        saveDictionary();  // save
+        return serverResponse;
+    }
+
+    private ServerResponse UpdateWord(ClientRequest clientRequest) {
         String word = clientRequest.word;
         String oldMeaning = clientRequest.oldMeaning;
         String newMeaning = clientRequest.newMeaning;
-
         ServerResponse serverResponse = new ServerResponse();
 
-        // 判断是否存在 word
-        if (!dictionary.containsKey(word)) {
+        List<String> meanings = dictionary.get(word);
+        if (meanings == null) {
             serverResponse.response = Response.NO_WORD;
             serverResponse.word = word;
             log.warn("Word '{}' not found in dictionary.", word);
             return serverResponse;
         }
 
-        // 判断是否存在 oldMeaning
-        List<String> meanings = dictionary.get(word);
-        if (!meanings.contains(oldMeaning)) {
-            serverResponse.response = Response.NO_MEANING;
+        // synchronize list of meanings to ensure thread security
+        synchronized (meanings) {
+            if (!meanings.contains(oldMeaning)) {
+                serverResponse.response = Response.NO_MEANING;
+                serverResponse.word = word;
+                log.warn("Old meaning '{}' not found for word '{}'.", oldMeaning, word);
+                return serverResponse;
+            }
+
+            if (meanings.contains(newMeaning)) {
+                serverResponse.response = Response.DUPLICATE_MEANING;
+                serverResponse.word = word;
+                log.warn("New meaning '{}' for word '{}' duplicates.", newMeaning, word);
+                return serverResponse;
+            }
+
+            // update
+            meanings.remove(oldMeaning);
+            meanings.add(newMeaning);
+            dictionary.put(word, meanings);
+            serverResponse.response = Response.UPDATED;
             serverResponse.word = word;
-            log.warn("Old meaning '{}' not found for word '{}'.", oldMeaning, word);
-            return serverResponse;
+            log.info("Updated word '{}' from '{}' to '{}'.", word, oldMeaning, newMeaning);
         }
 
-        // 判断是否存在 newMeaning
-        if (meanings.contains(newMeaning)) {
-            serverResponse.response = Response.DUPLICATE_MEANING;
-            serverResponse.word = word;
-            log.warn("New meaning '{}' for word '{}' duplicates.", newMeaning, word);
-            return serverResponse;
-        }
-
-        // 更新旧的 meaning 为新的 meaning
-        meanings.remove(oldMeaning);
-        meanings.add(newMeaning);
-        dictionary.put(word, meanings);
-        serverResponse.response = Response.UPDATED;
-        serverResponse.word = word;
-        log.info("Updated word '{}' from '{}' to '{}'.", word, oldMeaning, newMeaning);
-
-        saveDictionary();  // 每次操作后保存字典
+        saveDictionary();  // save
         return serverResponse;
     }
 
@@ -198,8 +230,7 @@ public class Server {
         String word = clientRequest.word;
         ServerResponse serverResponse = new ServerResponse();
 
-        if (dictionary.containsKey(word)) {
-            dictionary.remove(word);
+        if (dictionary.remove(word) != null) {
             serverResponse.response = Response.REMOVED;
             serverResponse.word = clientRequest.word;
             log.info("Removed word '{}'", word);
@@ -208,6 +239,8 @@ public class Server {
             serverResponse.word = clientRequest.word;
             log.warn("Word '{}' not found in the dictionary.", word);
         }
+
+        saveDictionary();  // save
         return serverResponse;
     }
 
@@ -215,22 +248,33 @@ public class Server {
         String word = clientRequest.word;
         ServerResponse serverResponse = new ServerResponse();
 
-        if (dictionary.containsKey(word)) {
-            List<String> meanings = dictionary.get(word);
+        List<String> meanings = dictionary.get(word);
+        if (meanings != null) {
             serverResponse.response = Response.SUCCESS;
             serverResponse.word = word;
             serverResponse.meanings = meanings;
             log.info("Found word '{}': meanings: {}", word, meanings);
         } else {
-            // 没有找到该词
             serverResponse.response = Response.NO_WORD;
             serverResponse.word = word;
             log.warn("Word '{}' not found in the dictionary.", word);
         }
+
         return serverResponse;
     }
     public static void main(String[] args) {
-        Server server = new Server();
-        server.start();
+        if (args.length != 2) {
+            System.err.println("Usage: java -jar DictionaryServer.jar <port> <dictionary-file>");
+            return;
+        }
+
+        try {
+            PORT = Integer.parseInt(args[0]);
+            FILE_NAME = args[1];
+            Server server = new Server();
+            server.start();
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid port number: " + args[0]);
+        }
     }
 }

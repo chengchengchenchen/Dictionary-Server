@@ -2,14 +2,11 @@ package enums;
 
 public enum Request {
     // CRUD Operations
+    CREATE("CREATE", "Create a new word"),
     ADD("ADD", "Add a new word meaning"),
     SEARCH("SEARCH", "Search a word"),
     UPDATE("UPDATE", "Update an existing word"),
-    REMOVE("REMOVE", "Remove an existing word"),
-
-    // Additional Operations
-    CONNECT("CONNECT", "Establish a connection"),
-    DISCONNECT("DISCONNECT", "Terminate a connection");
+    REMOVE("REMOVE", "Remove an existing word");
 
     private final String action;
     private final String description;
@@ -30,14 +27,5 @@ public enum Request {
     @Override
     public String toString() {
         return action + ": " + description;
-    }
-
-    public static Request fromAction(String action) {
-        for (Request request : Request.values()) {
-            if (request.getAction().equalsIgnoreCase(action)) {
-                return request;
-            }
-        }
-        throw new IllegalArgumentException("Unknown request action: " + action);
     }
 }

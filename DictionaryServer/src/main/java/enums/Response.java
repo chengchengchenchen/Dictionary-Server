@@ -3,8 +3,9 @@ package enums;
 public enum Response {
     // Success
     SUCCESS(200, "OK query"),
-    ADDED(201, "Word added successfully"),
-    UPDATED(202, "Word already updated"),
+    CREATED(201, "Word created successfully"),
+    ADDED(202, "Meaning added successfully"),
+    UPDATED(203, "Word meaning already updated"),
     REMOVED(204, "Word removed successfully"),
 
 
@@ -14,13 +15,7 @@ public enum Response {
     NO_MEANING(402, "Meaning is nonexistent"),
     DUPLICATE_MEANING(403, "Meaning duplicates"),
     NO_ACTION(404, "Unknown action"),
-    FORBIDDEN(405, "Invalid format"),
-
-    // 5xx Client Error
-    INTERNAL_SERVER_ERROR(500, "Internal server.Server Error"),
-    NOT_IMPLEMENTED(501, "Not Implemented"),
-    BAD_GATEWAY(502, "Bad Gateway"),
-    SERVICE_UNAVAILABLE(503, "Service Unavailable");
+    FORBIDDEN(405, "Invalid format");
 
     private final int code;
     private final String description;
@@ -43,13 +38,5 @@ public enum Response {
         return code + " " + description;
     }
 
-    public static Response fromCode(int code) {
-        for (Response response : Response.values()) {
-            if (response.getCode() == code) {
-                return response;
-            }
-        }
-        throw new IllegalArgumentException("Unknown response code: " + code);
-    }
 }
 
