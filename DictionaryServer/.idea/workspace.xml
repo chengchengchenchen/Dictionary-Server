@@ -5,12 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ba231ed6-0492-47eb-a422-0dadea89babc" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/client/ClientGUI.form" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/client/ClientGUI.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dictionary.json" beforeDir="false" afterPath="$PROJECT_DIR$/dictionary.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/client/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/client/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/enums/Response.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/enums/Response.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/server/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/server/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/server/ServerResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/server/ServerResponse.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,9 +56,22 @@
       <recent name="" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Client">
+  <component name="RunManager" selected="Application.ClientGUI">
     <configuration name="Client" type="Application" factoryName="Application" singleton="false" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="client.Client" />
+      <module name="DictionaryServer" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="client.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ClientGUI" type="Application" factoryName="Application" singleton="false" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="client.ClientGUI" />
       <module name="DictionaryServer" />
       <extension name="coverage">
         <pattern>
@@ -85,13 +97,15 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="Application.ClientGUI" />
       <item itemvalue="Application.Client" />
       <item itemvalue="Application.Server" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.Client" />
         <item itemvalue="Application.Server" />
+        <item itemvalue="Application.ClientGUI" />
+        <item itemvalue="Application.Client" />
       </list>
     </recent_temporary>
   </component>
