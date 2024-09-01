@@ -1,3 +1,8 @@
+/*
+Student Name: Jingcheng Qian
+Student ID: 1640690
+*/
+
 package server;
 
 import client.ClientRequest;
@@ -12,6 +17,8 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -21,9 +28,9 @@ import java.util.concurrent.Executors;
 public class Server {
     private static int PORT = 8080;
     private static String FILE_NAME = "dictionary.json";
-    private final ConcurrentHashMap<String, List<String>> dictionary;
+    private final ConcurrentHashMap<String, List<String>> dictionary;   //thread security
     private final Gson gson = new Gson();
-    private final ExecutorService threadPool = Executors.newFixedThreadPool(2);
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(5);
 
     public Server() {
         dictionary = loadDictionary();
@@ -69,26 +76,35 @@ public class Server {
         }
     }
 
+    /* one thread one client model
+        new client socket out of thread pool contains will wait
+    */
     private void handleClient(Socket clientSocket) {
         log.info("Client connected: {}", clientSocket.getRemoteSocketAddress());
-        try (
-                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)
-        ) {
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                try {
-                    ClientRequest request = gson.fromJson(inputLine, ClientRequest.class);
-                    log.info("Received request: {}", request);
-                    ServerResponse response = processRequest(request);
-                    out.println(gson.toJson(response));
-                } catch (JsonSyntaxException | IllegalArgumentException e) {
-                    log.warn("Invalid request format: {}", e.getMessage());
-                    out.println(gson.toJson(new ServerResponse(Response.FORBIDDEN)));
+        try {
+            // 1min
+            clientSocket.setSoTimeout(60000);
+            try (
+                    BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                    PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)
+            ) {
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    try {
+                        ClientRequest request = gson.fromJson(inputLine, ClientRequest.class);
+                        log.info("Received request: {}", request);
+                        ServerResponse response = processRequest(request);
+                        out.println(gson.toJson(response));
+                    } catch (JsonSyntaxException | IllegalArgumentException e) {
+                        log.warn("Invalid request format: {}", e.getMessage());
+                        out.println(gson.toJson(new ServerResponse(Response.FORBIDDEN)));
+                    }
                 }
+            }  catch (IOException e) {
+                log.info("Client disconnected: {}", e.getMessage());
             }
-        } catch (IOException e) {
-            log.info("Client disconnected: {}", e.getMessage());
+        } catch (SocketException e) {
+            log.info("Client connection timed out: {}", clientSocket.getRemoteSocketAddress());
         } finally {
             try {
                 clientSocket.close();
@@ -99,9 +115,12 @@ public class Server {
         }
     }
 
+
     private ServerResponse processRequest(ClientRequest clientRequest) {
         Request action = clientRequest.request;
         ServerResponse serverResponse;
+
+        // response to every kind of action
         switch(action){
             case CREATE:
                 serverResponse = CreateWord(clientRequest);
@@ -131,12 +150,13 @@ public class Server {
         return serverResponse;
     }
 
+    // use word, meaning(s) to create a word
     private ServerResponse CreateWord(ClientRequest clientRequest){
         String word = clientRequest.word;
         List<String> meanings = clientRequest.meanings;
         ServerResponse serverResponse = new ServerResponse();
 
-        // putIfAbsent
+        // putIfAbsent to ensure thread security
         if (dictionary.putIfAbsent(word, meanings) == null) {
             serverResponse.response = Response.CREATED;
             serverResponse.word = clientRequest.word;
@@ -150,6 +170,7 @@ public class Server {
         return serverResponse;
     }
 
+    // use word, a new meaning to add meanings
     private ServerResponse AddMeaning(ClientRequest clientRequest){
         String word = clientRequest.word;
         String newMeaning = clientRequest.newMeaning;
@@ -183,12 +204,14 @@ public class Server {
         return serverResponse;
     }
 
+    // use word, old meaning, new meaning to update
     private ServerResponse UpdateWord(ClientRequest clientRequest) {
         String word = clientRequest.word;
         String oldMeaning = clientRequest.oldMeaning;
         String newMeaning = clientRequest.newMeaning;
         ServerResponse serverResponse = new ServerResponse();
 
+        // read action
         List<String> meanings = dictionary.get(word);
         if (meanings == null) {
             serverResponse.response = Response.NO_WORD;
@@ -226,10 +249,12 @@ public class Server {
         return serverResponse;
     }
 
+    // use a word to remove
     private ServerResponse RemoveWord(ClientRequest clientRequest){
         String word = clientRequest.word;
         ServerResponse serverResponse = new ServerResponse();
 
+        //remove to ensure function security
         if (dictionary.remove(word) != null) {
             serverResponse.response = Response.REMOVED;
             serverResponse.word = clientRequest.word;
@@ -244,10 +269,12 @@ public class Server {
         return serverResponse;
     }
 
+    // use a word to search
     private ServerResponse SearchWord(ClientRequest clientRequest){
         String word = clientRequest.word;
         ServerResponse serverResponse = new ServerResponse();
 
+        // read action
         List<String> meanings = dictionary.get(word);
         if (meanings != null) {
             serverResponse.response = Response.SUCCESS;

@@ -39,15 +39,13 @@
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <!-- 设置 server 类的主入口 -->
                                     <mainClass>server.Server</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
-                                <!-- 创建一个完整的 JAR -->
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
-                            <finalName>${project.artifactId}-server</finalName>
+                            <finalName>DictionaryServer</finalName>
                         </configuration>
                     </execution>
 
@@ -61,15 +59,13 @@
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <!-- 设置 client 类的主入口 -->
                                     <mainClass>client.ClientGUI</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
-                                <!-- 创建一个完整的 JAR -->
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
-                            <finalName>${project.artifactId}-client</finalName>
+                            <finalName>DictionaryClient</finalName>
                         </configuration>
                     </execution>
                 </executions>

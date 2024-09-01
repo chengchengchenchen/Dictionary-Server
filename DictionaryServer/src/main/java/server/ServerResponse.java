@@ -1,3 +1,8 @@
+/*
+Student Name: Jingcheng Qian
+Student ID: 1640690
+*/
+
 package server;
 
 import enums.Request;
@@ -17,7 +22,7 @@ public class ServerResponse {
         this.meanings = meanings;
     }
 
-    //ADD || UPDATE || REMOVE
+    //CREATE || ADD || UPDATE || REMOVE
     public ServerResponse(Response response, String word){
         this.response = response;
         this.word = word;

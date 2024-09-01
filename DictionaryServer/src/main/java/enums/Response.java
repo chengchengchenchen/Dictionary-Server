@@ -1,3 +1,8 @@
+/*
+Student Name: Jingcheng Qian
+Student ID: 1640690
+*/
+
 package enums;
 
 public enum Response {
@@ -25,7 +30,7 @@ public enum Response {
         this.description = description;
     }
 
-    public int getCode() {
+    public int cgetCode() {
         return code;
     }
 
