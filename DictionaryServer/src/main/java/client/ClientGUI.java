@@ -219,7 +219,6 @@ public class ClientGUI {
 
         // Send add action to server
         ClientRequest request = new ClientRequest(Request.ADD, word, newMeaning);
-        System.out.println(request);
         String jsonRequest = gson.toJson(request);
         out.println(jsonRequest);
 

@@ -6,16 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="ba231ed6-0492-47eb-a422-0dadea89babc" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dictionary.json" beforeDir="false" afterPath="$PROJECT_DIR$/dictionary.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/client/ClientGUI.form" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/client/ClientGUI.form" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/client/ClientGUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/client/ClientGUI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/client/ClientRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/client/ClientRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/enums/Request.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/enums/Request.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/enums/Response.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/enums/Response.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/server/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/server/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/server/ServerResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/server/ServerResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../README.pdf" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
